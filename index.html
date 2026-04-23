@@ -1,93 +1,1390 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Auto Scroll Timer</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 20px;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Scroll Overlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.container {
-    max-width: 400px;
-    margin: auto;
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
 
-input, select, button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 16px;
-}
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(0, 150, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(128, 0, 255, 0.05) 0%, transparent 50%);
+            animation: bgPulse 8s ease-in-out infinite;
+            z-index: -1;
+        }
 
-#status {
-    margin-top: 15px;
-    font-weight: bold;
-    color: green;
-}
+        @keyframes bgPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
 
-/* conteúdo longo pra testar scroll */
-.content {
-    height: 2000px;
-    background: linear-gradient(white, lightblue);
-    margin-top: 20px;
-}
-</style>
+        .container {
+            width: 380px;
+            background: rgba(15, 15, 35, 0.95);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 40px rgba(0, 100, 255, 0.1);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0096ff, #8000ff, transparent);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header .icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #0096ff, #8000ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 28px;
+            box-shadow: 0 8px 25px rgba(0, 150, 255, 0.3);
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .input-wrapper label {
+            display: block;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus {
+            border-color: rgba(0, 150, 255, 0.5);
+            background: rgba(0, 150, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.1);
+        }
+
+        .input-wrapper input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+        }
+
+        /* Direction Selector */
+        .direction-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .direction-btn {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .direction-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .direction-btn.active {
+            background: rgba(0, 150, 255, 0.1);
+            border-color: rgba(0, 150, 255, 0.4);
+            color: #0096ff;
+        }
+
+        .direction-btn .arrow {
+            font-size: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .direction-btn.active .arrow {
+            animation: arrowBounce 1s ease-in-out infinite;
+        }
+
+        .direction-btn.active[data-dir="down"] .arrow {
+            animation: arrowBounceDown 1s ease-in-out infinite;
+        }
+
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes arrowBounceDown {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(4px); }
+        }
+
+        .direction-btn span:last-child {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Speed Slider */
+        .slider-container {
+            margin-top: 5px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .slider-value {
+            color: #0096ff;
+            font-size: 14px;
+            font-weight: 700;
+            background: rgba(0, 150, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0096ff, #8000ff);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 150, 255, 0.4);
+            transition: all 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 20px rgba(0, 150, 255, 0.6);
+        }
+
+        /* Scroll Amount */
+        .scroll-amount-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .scroll-amount-input:focus {
+            border-color: rgba(0, 150, 255, 0.5);
+            background: rgba(0, 150, 255, 0.05);
+        }
+
+        /* Repeat toggle */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 10px;
+        }
+
+        .toggle-row .toggle-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toggle-row .toggle-sublabel {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-track::before {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            left: 3px;
+            top: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch input:checked + .toggle-track {
+            background: linear-gradient(135deg, #0096ff, #8000ff);
+        }
+
+        .toggle-switch input:checked + .toggle-track::before {
+            transform: translateX(22px);
+        }
+
+        /* Main Button */
+        .start-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .start-btn.start {
+            background: linear-gradient(135deg, #0096ff, #0050ff);
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(0, 150, 255, 0.3);
+        }
+
+        .start-btn.start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 150, 255, 0.4);
+        }
+
+        .start-btn.stop {
+            background: linear-gradient(135deg, #ff3b5c, #ff0040);
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(255, 59, 92, 0.3);
+        }
+
+        .start-btn.stop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(255, 59, 92, 0.4);
+        }
+
+        .start-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .start-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg) translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .start-btn:hover::after {
+            transform: rotate(45deg) translateX(100%);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: none;
+        }
+
+        .status-bar.visible {
+            display: block;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); }
+        }
+
+        .status-dot.waiting {
+            background: #ffaa00;
+            animation: pulseWaiting 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseWaiting {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 170, 0, 0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(255, 170, 0, 0); }
+        }
+
+        .status-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-stats {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        /* Countdown overlay */
+        .countdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        }
+
+        .countdown-overlay.visible {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .countdown-number {
+            font-size: 120px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 60px rgba(0, 150, 255, 0.5);
+            animation: countPop 0.5s ease;
+        }
+
+        @keyframes countPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Floating overlay button (simulated) */
+        .overlay-widget {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0096ff, #8000ff);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 6px 25px rgba(0, 150, 255, 0.5);
+            font-size: 24px;
+            animation: floatWidget 2s ease-in-out infinite;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .overlay-widget.visible {
+            display: flex;
+        }
+
+        .overlay-widget:active {
+            transform: scale(0.9);
+        }
+
+        @keyframes floatWidget {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Mini overlay panel */
+        .overlay-panel {
+            position: fixed;
+            top: 85px;
+            right: 20px;
+            width: 200px;
+            background: rgba(15, 15, 35, 0.97);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+            display: none;
+            z-index: 10000;
+            backdrop-filter: blur(20px);
+        }
+
+        .overlay-panel.visible {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .overlay-panel .mini-status {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .overlay-panel .mini-count {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .overlay-panel .mini-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .overlay-panel .mini-btn.stop-mini {
+            background: linear-gradient(135deg, #ff3b5c, #ff0040);
+        }
+
+        /* Demo scroll area */
+        .demo-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: rgba(15, 15, 35, 0.98);
+            transition: height 0.4s ease;
+            overflow-y: auto;
+            z-index: 5000;
+        }
+
+        .demo-area.visible {
+            height: 100vh;
+        }
+
+        .demo-content {
+            padding: 80px 30px 30px;
+        }
+
+        .demo-content h2 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .demo-content p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .demo-item {
+            padding: 30px 20px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .demo-close {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 5001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-close.visible {
+            display: flex;
+        }
+
+        /* Notification toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(15, 15, 35, 0.95);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            z-index: 99999;
+            transition: transform 0.4s ease;
+            white-space: nowrap;
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 150, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        /* Mode selector */
+        .mode-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, rgba(0, 150, 255, 0.2), rgba(128, 0, 255, 0.2));
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 150, 255, 0.2);
+        }
+
+        .mode-tab:hover:not(.active) {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Progress ring */
+        .timer-display {
+            text-align: center;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .timer-display.visible {
+            display: block;
+        }
+
+        .timer-circle {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+        .timer-circle svg {
+            transform: rotate(-90deg);
+        }
+
+        .timer-circle .bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 4;
+        }
+
+        .timer-circle .progress {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .timer-time {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 22px;
+            font-weight: 800;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Auto Scroll Timer</h2>
+    <!-- Main Container -->
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <div class="icon">📜</div>
+            <h1>Auto Scroll</h1>
+            <p>Scroll automático com timer</p>
+        </div>
 
-    <input type="number" id="tempo" placeholder="Tempo em segundos">
+        <!-- Mode Tabs -->
+        <div class="mode-tabs">
+            <div class="mode-tab active" data-mode="timer" onclick="setMode('timer')">⏱ Timer</div>
+            <div class="mode-tab" data-mode="continuous" onclick="setMode('continuous')">♾ Contínuo</div>
+        </div>
 
-    <select id="direcao">
-        <option value="baixo">Scroll para baixo</option>
-        <option value="cima">Scroll para cima</option>
-    </select>
+        <!-- Timer Section -->
+        <div class="section" id="timerSection">
+            <div class="section-label">⏰ Tempo antes de iniciar</div>
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <label>Minutos</label>
+                    <input type="number" id="minutes" value="0" min="0" max="59" placeholder="00">
+                </div>
+                <div class="input-wrapper">
+                    <label>Segundos</label>
+                    <input type="number" id="seconds" value="5" min="0" max="59" placeholder="00">
+                </div>
+            </div>
+        </div>
 
-    <button onclick="iniciar()">Iniciar</button>
+        <!-- Direction -->
+        <div class="section">
+            <div class="section-label">↕ Direção do Scroll</div>
+            <div class="direction-selector">
+                <div class="direction-btn" data-dir="down" onclick="setDirection('down')">
+                    <span class="arrow">⬇️</span>
+                    <span>Baixo</span>
+                </div>
+                <div class="direction-btn active" data-dir="up" onclick="setDirection('up')">
+                    <span class="arrow">⬆️</span>
+                    <span>Cima</span>
+                </div>
+                <div class="direction-btn" data-dir="both" onclick="setDirection('both')">
+                    <span class="arrow">↕️</span>
+                    <span>Ambos</span>
+                </div>
+            </div>
+        </div>
 
-    <div id="status"></div>
-</div>
+        <!-- Speed -->
+        <div class="section">
+            <div class="section-label">⚡ Velocidade do Scroll</div>
+            <div class="slider-container">
+                <div class="slider-header">
+                    <span style="color: rgba(255,255,255,0.4); font-size: 12px;">Lento</span>
+                    <span class="slider-value" id="speedValue">5</span>
+                    <span style="color: rgba(255,255,255,0.4); font-size: 12px;">Rápido</span>
+                </div>
+                <input type="range" class="slider" id="speedSlider" min="1" max="10" value="5" oninput="updateSpeed()">
+            </div>
+        </div>
 
-<div class="content"></div>
+        <!-- Scroll Amount -->
+        <div class="section">
+            <div class="section-label">📏 Pixels por scroll</div>
+            <input type="number" class="scroll-amount-input" id="scrollAmount" value="100" min="1" max="10000" placeholder="100">
+        </div>
 
-<script>
-function iniciar() {
-    let tempo = document.getElementById("tempo").value;
-    let direcao = document.getElementById("direcao").value;
-    let status = document.getElementById("status");
+        <!-- Interval between scrolls -->
+        <div class="section">
+            <div class="section-label">⏳ Intervalo entre scrolls (ms)</div>
+            <input type="number" class="scroll-amount-input" id="scrollInterval" value="1000" min="50" max="60000" placeholder="1000">
+        </div>
 
-    if (!tempo || tempo <= 0) {
-        alert("Coloque um tempo válido!");
-        return;
-    }
+        <!-- Toggles -->
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">🔁 Repetir</div>
+                <div class="toggle-sublabel">Scroll contínuo</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="repeatToggle" checked>
+                <div class="toggle-track"></div>
+            </label>
+        </div>
 
-    status.innerText = "Aguardando " + tempo + " segundos...";
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">🖥 Demo na página</div>
+                <div class="toggle-sublabel">Testar scroll aqui</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="demoToggle" checked>
+                <div class="toggle-track"></div>
+            </label>
+        </div>
 
-    setTimeout(() => {
-        status.innerText = "Executando scroll...";
+        <!-- Timer Display -->
+        <div class="timer-display" id="timerDisplay">
+            <div class="timer-circle">
+                <svg width="100" height="100">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0096ff"/>
+                            <stop offset="100%" style="stop-color:#8000ff"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="bg" cx="50" cy="50" r="45"/>
+                    <circle class="progress" id="timerProgress" cx="50" cy="50" r="45"/>
+                </svg>
+                <div class="timer-time" id="timerTime">0:00</div>
+            </div>
+        </div>
 
-        let intervalo = setInterval(() => {
-            if (direcao === "baixo") {
-                window.scrollBy(0, 10);
-            } else {
-                window.scrollBy(0, -10);
+        <!-- Start Button -->
+        <button class="start-btn start" id="startBtn" onclick="toggleScroll()">
+            ▶ Iniciar Auto Scroll
+        </button>
+
+        <!-- Status Bar -->
+        <div class="status-bar" id="statusBar">
+            <div class="status-header">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="status-text" id="statusText">Aguardando...</span>
+            </div>
+            <div class="status-stats">
+                <div class="stat">
+                    <div class="stat-value" id="scrollCount">0</div>
+                    <div class="stat-label">Scrolls</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="totalPx">0</div>
+                    <div class="stat-label">Pixels</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="elapsed">0:00</div>
+                    <div class="stat-label">Tempo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Countdown Overlay -->
+    <div class="countdown-overlay" id="countdownOverlay">
+        <div class="countdown-number" id="countdownNumber">3</div>
+    </div>
+
+    <!-- Floating Overlay Widget -->
+    <div class="overlay-widget" id="overlayWidget" onclick="toggleOverlayPanel()">
+        📜
+    </div>
+
+    <!-- Overlay Mini Panel -->
+    <div class="overlay-panel" id="overlayPanel">
+        <div class="mini-status" id="miniStatus">Scrollando...</div>
+        <div class="mini-count" id="miniCount">0</div>
+        <button class="mini-btn stop-mini" onclick="stopAll()">⏹ Parar</button>
+    </div>
+
+    <!-- Demo Scroll Area -->
+    <div class="demo-area" id="demoArea">
+        <div class="demo-content">
+            <h2>📜 Área de Teste do Auto Scroll</h2>
+            <p>O scroll automático vai rolar esta área. Observe o comportamento!</p>
+        </div>
+    </div>
+
+    <!-- Close Demo Button -->
+    <button class="demo-close" id="demoClose" onclick="closeDemo()">✕</button>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // State
+        let state = {
+            mode: 'timer',
+            direction: 'up',
+            speed: 5,
+            isRunning: false,
+            isPaused: false,
+            scrollCount: 0,
+            totalPixels: 0,
+            startTime: null,
+            timerId: null,
+            scrollTimerId: null,
+            countdownId: null,
+            elapsedId: null,
+            currentDirection: 'up',
+            demoVisible: false
+        };
+
+        // DOM Elements
+        const elements = {
+            minutes: document.getElementById('minutes'),
+            seconds: document.getElementById('seconds'),
+            speedSlider: document.getElementById('speedSlider'),
+            speedValue: document.getElementById('speedValue'),
+            scrollAmount: document.getElementById('scrollAmount'),
+            scrollInterval: document.getElementById('scrollInterval'),
+            repeatToggle: document.getElementById('repeatToggle'),
+            demoToggle: document.getElementById('demoToggle'),
+            startBtn: document.getElementById('startBtn'),
+            statusBar: document.getElementById('statusBar'),
+            statusDot: document.getElementById('statusDot'),
+            statusText: document.getElementById('statusText'),
+            scrollCount: document.getElementById('scrollCount'),
+            totalPx: document.getElementById('totalPx'),
+            elapsed: document.getElementById('elapsed'),
+            countdownOverlay: document.getElementById('countdownOverlay'),
+            countdownNumber: document.getElementById('countdownNumber'),
+            timerDisplay: document.getElementById('timerDisplay'),
+            timerProgress: document.getElementById('timerProgress'),
+            timerTime: document.getElementById('timerTime'),
+            overlayWidget: document.getElementById('overlayWidget'),
+            overlayPanel: document.getElementById('overlayPanel'),
+            miniStatus: document.getElementById('miniStatus'),
+            miniCount: document.getElementById('miniCount'),
+            demoArea: document.getElementById('demoArea'),
+            demoClose: document.getElementById('demoClose'),
+            mainContainer: document.getElementById('mainContainer'),
+            toast: document.getElementById('toast'),
+            timerSection: document.getElementById('timerSection')
+        };
+
+        // Generate demo content
+        function generateDemoContent() {
+            const container = document.querySelector('.demo-content');
+            for (let i = 1; i <= 100; i++) {
+                const item = document.createElement('div');
+                item.className = 'demo-item';
+                item.textContent = `📄 Item ${i} — Conteúdo de exemplo para scroll`;
+                container.appendChild(item);
             }
-        }, 20);
+        }
+        generateDemoContent();
 
-        // parar depois de 5 segundos
-        setTimeout(() => {
-            clearInterval(intervalo);
-            status.innerText = "Finalizado!";
-        }, 5000);
+        // Set Mode
+        function setMode(mode) {
+            state.mode = mode;
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.mode === mode);
+            });
+            elements.timerSection.style.display = mode === 'timer' ? 'block' : 'none';
+        }
 
-    }, tempo * 1000);
-}
-</script>
+        // Set Direction
+        function setDirection(dir) {
+            state.direction = dir;
+            state.currentDirection = dir === 'both' ? 'down' : dir;
+            document.querySelectorAll('.direction-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.dir === dir);
+            });
+        }
 
+        // Update Speed
+        function updateSpeed() {
+            state.speed = parseInt(elements.speedSlider.value);
+            elements.speedValue.textContent = state.speed;
+        }
+
+        // Show Toast
+        function showToast(message) {
+            elements.toast.textContent = message;
+            elements.toast.classList.add('visible');
+            setTimeout(() => elements.toast.classList.remove('visible'), 3000);
+        }
+
+        // Toggle Overlay Panel
+        function toggleOverlayPanel() {
+            elements.overlayPanel.classList.toggle('visible');
+        }
+
+        // Format Time
+        function formatTime(totalSeconds) {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Toggle Scroll
+        function toggleScroll() {
+            if (state.isRunning) {
+                stopAll();
+            } else {
+                startProcess();
+            }
+        }
+
+        // Start Process
+        function startProcess() {
+            if (state.mode === 'timer') {
+                const mins = parseInt(elements.minutes.value) || 0;
+                const secs = parseInt(elements.seconds.value) || 0;
+                const totalDelay = mins * 60 + secs;
+
+                if (totalDelay <= 0) {
+                    showCountdownAndStart();
+                    return;
+                }
+
+                startTimer(totalDelay);
+            } else {
+                showCountdownAndStart();
+            }
+        }
+
+        // Start Timer
+        function startTimer(totalSeconds) {
+            state.isRunning = true;
+            updateButtonState(true);
+
+            elements.timerDisplay.classList.add('visible');
+            elements.statusBar.classList.add('visible');
+            elements.statusDot.classList.add('waiting');
+            elements.statusText.textContent = 'Aguardando timer...';
+
+            let remaining = totalSeconds;
+            const circumference = 2 * Math.PI * 45; // 283
+
+            updateTimerUI(remaining, totalSeconds, circumference);
+
+            state.timerId = setInterval(() => {
+                remaining--;
+                updateTimerUI(remaining, totalSeconds, circumference);
+
+                if (remaining <= 0) {
+                    clearInterval(state.timerId);
+                    elements.timerDisplay.classList.remove('visible');
+                    showCountdownAndStart();
+                }
+            }, 1000);
+
+            showToast('⏱ Timer iniciado!');
+        }
+
+        function updateTimerUI(remaining, total, circumference) {
+            const progress = (remaining / total) * circumference;
+            elements.timerProgress.style.strokeDasharray = circumference;
+            elements.timerProgress.style.strokeDashoffset = circumference - progress;
+            elements.timerTime.textContent = formatTime(remaining);
+        }
+
+        // Show Countdown
+        function showCountdownAndStart() {
+            state.isRunning = true;
+            updateButtonState(true);
+
+            let count = 3;
+            elements.countdownOverlay.classList.add('visible');
+            elements.countdownNumber.textContent = count;
+
+            state.countdownId = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    elements.countdownNumber.textContent = count;
+                    elements.countdownNumber.style.animation = 'none';
+                    void elements.countdownNumber.offsetWidth;
+                    elements.countdownNumber.style.animation = 'countPop 0.5s ease';
+                } else {
+                    clearInterval(state.countdownId);
+                    elements.countdownOverlay.classList.remove('visible');
+                    startScrolling();
+                }
+            }, 1000);
+        }
+
+        // Start Scrolling
+        function startScrolling() {
+            const useDemo = elements.demoToggle.checked;
+
+            if (useDemo) {
+                elements.demoArea.classList.add('visible');
+                elements.demoClose.classList.add('visible');
+                elements.mainContainer.style.display = 'none';
+                state.demoVisible = true;
+
+                // Reset scroll position
+                if (state.direction === 'down' || state.direction === 'both') {
+                    elements.demoArea.scrollTop = 0;
+                } else {
+                    elements.demoArea.scrollTop = elements.demoArea.scrollHeight;
+                }
+            }
+
+            // Show overlay widget
+            elements.overlayWidget.classList.add('visible');
+
+            // Show status
+            elements.statusBar.classList.add('visible');
+            elements.statusDot.classList.remove('waiting');
+            elements.statusText.textContent = 'Scrollando...';
+
+            state.scrollCount = 0;
+            state.totalPixels = 0;
+            state.startTime = Date.now();
+
+            // Update elapsed timer
+            state.elapsedId = setInterval(() => {
+                const elapsedSec = Math.floor((Date.now() - state.startTime) / 1000);
+                elements.elapsed.textContent = formatTime(elapsedSec);
+            }, 1000);
+
+            // Start scroll loop
+            const interval = parseInt(elements.scrollInterval.value) || 1000;
+            const amount = parseInt(elements.scrollAmount.value) || 100;
+            const speedMultiplier = state.speed / 5;
+
+            doScroll(useDemo, amount, speedMultiplier);
+
+            state.scrollTimerId = setInterval(() => {
+                doScroll(useDemo, amount, speedMultiplier);
+            }, interval);
+
+            showToast('📜 Auto Scroll ativado!');
+        }
+
+        // Perform Scroll
+        function doScroll(useDemo, amount, speedMultiplier) {
+            const scrollPx = Math.round(amount * speedMultiplier);
+            let direction = state.currentDirection;
+
+            const target = useDemo ? elements.demoArea : window;
+            const scrollEl = useDemo ? elements.demoArea : document.documentElement;
+
+            if (direction === 'down') {
+                if (useDemo) {
+                    const maxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
+                    if (scrollEl.scrollTop >= maxScroll) {
+                        if (state.direction === 'both') {
+                            state.currentDirection = 'up';
+                        } else if (!elements.repeatToggle.checked) {
+                            stopAll();
+                            showToast('✅ Chegou ao final!');
+                            return;
+                        } else {
+                            scrollEl.scrollTop = 0;
+                        }
+                    }
+                    elements.demoArea.scrollBy({ top: scrollPx, behavior: 'smooth' });
+                } else {
+                    window.scrollBy({ top: scrollPx, behavior: 'smooth' });
+                }
+            } else {
+                if (useDemo) {
+                    if (scrollEl.scrollTop <= 0) {
+                        if (state.direction === 'both') {
+                            state.currentDirection = 'down';
+                        } else if (!elements.repeatToggle.checked) {
+                            stopAll();
+                            showToast('✅ Chegou ao topo!');
+                            return;
+                        } else {
+                            scrollEl.scrollTop = scrollEl.scrollHeight;
+                        }
+                    }
+                    elements.demoArea.scrollBy({ top: -scrollPx, behavior: 'smooth' });
+                } else {
+                    window.scrollBy({ top: -scrollPx, behavior: 'smooth' });
+                }
+            }
+
+            state.scrollCount++;
+            state.totalPixels += scrollPx;
+
+            // Update UI
+            elements.scrollCount.textContent = state.scrollCount;
+            elements.totalPx.textContent = state.totalPixels > 1000 
+                ? (state.totalPixels / 1000).toFixed(1) + 'k' 
+                : state.totalPixels;
+            elements.miniCount.textContent = state.scrollCount;
+        }
+
+        // Stop All
+        function stopAll() {
+            clearInterval(state.timerId);
+            clearInterval(state.scrollTimerId);
+            clearInterval(state.countdownId);
+            clearInterval(state.elapsedId);
+
+            state.isRunning = false;
+            state.currentDirection = state.direction === 'both' ? 'down' : state.direction;
+
+            updateButtonState(false);
+
+            elements.countdownOverlay.classList.remove('visible');
+            elements.timerDisplay.classList.remove('visible');
+            elements.overlayWidget.classList.remove('visible');
+            elements.overlayPanel.classList.remove('visible');
+
+            elements.statusText.textContent = `Parado — ${state.scrollCount} scrolls realizados`;
+            elements.statusDot.classList.add('waiting');
+
+            showToast('⏹ Auto Scroll parado!');
+        }
+
+        // Close Demo
+        function closeDemo() {
+            stopAll();
+            elements.demoArea.classList.remove('visible');
+            elements.demoClose.classList.remove('visible');
+            elements.mainContainer.style.display = 'block';
+            state.demoVisible = false;
+        }
+
+        // Update Button State
+        function updateButtonState(running) {
+            if (running) {
+                elements.startBtn.className = 'start-btn stop';
+                elements.startBtn.innerHTML = '⏹ Parar Auto Scroll';
+            } else {
+                elements.startBtn.className = 'start-btn start';
+                elements.startBtn.innerHTML = '▶ Iniciar Auto Scroll';
+            }
+        }
+
+        // Make overlay widget draggable
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+
+        elements.overlayWidget.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragOffset.x = e.clientX - elements.overlayWidget.offsetLeft;
+            dragOffset.y = e.clientY - elements.overlayWidget.offsetTop;
+            elements.overlayWidget.style.animation = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            elements.overlayWidget.style.left = (e.clientX - dragOffset.x) + 'px';
+            elements.overlayWidget.style.top = (e.clientY - dragOffset.y) + 'px';
+            elements.overlayWidget.style.right = 'auto';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Touch support for dragging
+        elements.overlayWidget.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            isDragging = true;
+            dragOffset.x = touch.clientX - elements.overlayWidget.offsetLeft;
+            dragOffset.y = touch.clientY - elements.overlayWidget.offsetTop;
+            elements.overlayWidget.style.animation = 'none';
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            elements.overlayWidget.style.left = (touch.clientX - dragOffset.x) + 'px';
+            elements.overlayWidget.style.top = (touch.clientY - dragOffset.y) + 'px';
+            elements.overlayWidget.style.right = 'auto';
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                toggleScroll();
+            }
+            if (e.code === 'Escape') {
+                if (state.demoVisible) {
+                    closeDemo();
+                } else if (state.isRunning) {
+                    stopAll();
+                }
+            }
+        });
+
+        // Initialize
+        setDirection('up');
+        updateSpeed();
+    </script>
 </body>
 </html>
