@@ -2,49 +2,90 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Auto Scroll Controller</title>
-
+<title>Auto Scroll Timer</title>
 <style>
 body {
-  font-family: Arial;
-  background: #111;
-  color: white;
-  text-align: center;
-  padding-top: 50px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
 }
 
 input, select, button {
-  padding: 12px;
-  margin: 10px;
-  font-size: 16px;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+#status {
+    margin-top: 15px;
+    font-weight: bold;
+    color: green;
+}
+
+/* conteúdo longo pra testar scroll */
+.content {
+    height: 2000px;
+    background: linear-gradient(white, lightblue);
+    margin-top: 20px;
 }
 </style>
 </head>
-
 <body>
 
-<h2>Auto Scroll (Controle)</h2>
+<div class="container">
+    <h2>Auto Scroll Timer</h2>
 
-<input type="number" id="tempo" placeholder="Tempo (segundos)"><br>
+    <input type="number" id="tempo" placeholder="Tempo em segundos">
 
-<select id="direcao">
-  <option value="down">Baixo</option>
-  <option value="up">Cima</option>
-</select><br>
+    <select id="direcao">
+        <option value="baixo">Scroll para baixo</option>
+        <option value="cima">Scroll para cima</option>
+    </select>
 
-<button onclick="enviar()">Iniciar</button>
+    <button onclick="iniciar()">Iniciar</button>
+
+    <div id="status"></div>
+</div>
+
+<div class="content"></div>
 
 <script>
-function enviar() {
-  let tempo = document.getElementById("tempo").value;
-  let direcao = document.getElementById("direcao").value;
+function iniciar() {
+    let tempo = document.getElementById("tempo").value;
+    let direcao = document.getElementById("direcao").value;
+    let status = document.getElementById("status");
 
-  // Comunicação com app Android
-  if (window.Android) {
-    Android.startScroll(tempo, direcao);
-  } else {
-    alert("Isso só funciona no app!");
-  }
+    if (!tempo || tempo <= 0) {
+        alert("Coloque um tempo válido!");
+        return;
+    }
+
+    status.innerText = "Aguardando " + tempo + " segundos...";
+
+    setTimeout(() => {
+        status.innerText = "Executando scroll...";
+
+        let intervalo = setInterval(() => {
+            if (direcao === "baixo") {
+                window.scrollBy(0, 10);
+            } else {
+                window.scrollBy(0, -10);
+            }
+        }, 20);
+
+        // parar depois de 5 segundos
+        setTimeout(() => {
+            clearInterval(intervalo);
+            status.innerText = "Finalizado!";
+        }, 5000);
+
+    }, tempo * 1000);
 }
 </script>
 
