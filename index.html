@@ -1,81 +1,52 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Site em Desenvolvimento</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
+<meta charset="UTF-8">
+<title>Auto Scroll Controller</title>
 
-    body {
-      height: 100vh;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+  padding-top: 50px;
+}
 
-    .container {
-      max-width: 500px;
-      padding: 20px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 1.2rem;
-      opacity: 0.8;
-      margin-bottom: 20px;
-    }
-
-    .loader {
-      width: 50px;
-      height: 50px;
-      border: 5px solid rgba(255,255,255,0.2);
-      border-top: 5px solid #38bdf8;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    footer {
-      margin-top: 20px;
-      font-size: 0.9rem;
-      opacity: 0.6;
-    }
-  </style>
+input, select, button {
+  padding: 12px;
+  margin: 10px;
+  font-size: 16px;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>🚧 Em Desenvolvimento</h1>
-    <p>O site está sendo construído. Volte em breve.</p>
-    
-    <div class="loader"></div>
+<h2>Auto Scroll (Controle)</h2>
 
-    <footer>
-      © 2026 - Todos os direitos reservados
-    </footer>
-  </div>
+<input type="number" id="tempo" placeholder="Tempo (segundos)"><br>
+
+<select id="direcao">
+  <option value="down">Baixo</option>
+  <option value="up">Cima</option>
+</select><br>
+
+<button onclick="enviar()">Iniciar</button>
+
+<script>
+function enviar() {
+  let tempo = document.getElementById("tempo").value;
+  let direcao = document.getElementById("direcao").value;
+
+  // Comunicação com app Android
+  if (window.Android) {
+    Android.startScroll(tempo, direcao);
+  } else {
+    alert("Isso só funciona no app!");
+  }
+}
+</script>
 
 </body>
 </html>
